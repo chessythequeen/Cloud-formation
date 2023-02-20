@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  ChessyVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      
+  #Create a Public subnet.
+  MyPublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref ChessyVPC
+      CidrBlock: 10.0.1.0/24
+
+  #Create a Private subnet.
+  MyPrivateSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref ChessyVPC
+      CidrBlock: 10.0.2.0/24
+
+  #Create and attach an Internet Gateway.
+  ChessyIGW:
+    Type: 'AWS::EC2::InternetGateway'
+
+  AttachInternetGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref ChessyVPC
+      InternetGatewayId: !Ref ChessyIGW
+
+  #Create a Public Route Table.
+  ChessyRT:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref ChessyVPC
+
+  #Add the public Route in the Route table.
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: ChessyIGW
+    Properties:
+      RouteTableId: !Ref ChessyRT
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref ChessyIGW
+
+  #Associates Public Route Table with the Public subnet.
+  PublicSubnetAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'  
+    Properties:
+       RouteTableId: !Ref ChessyRT
+       SubnetId: !Ref MyPublicSubnet
