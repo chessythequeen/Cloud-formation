@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  ChessyLT:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Properties:
+      LaunchTemplateName: Chessy-LT
+      LaunchTemplateData:
+        ImageId: ami-0aa7d40eeae50c9a9
+        InstanceType: t2.micro
+        KeyName: chessykeypair
+        SecurityGroupIds:
+          - sg-0a3fe8df6f4f84823
+
+  AutoscalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      AvailabilityZones: !GetAZs ''
+      LaunchTemplate:
+        LaunchTemplateId: !Ref ChessyLT
+        Version: !GetAtt ChessyLT.LatestVersionNumber
+      MaxSize: 2
+      MinSize: 1
+      Tags:
+        - Key: 'name'
+          Value: 'chessy-AG'
+          PropagateAtLaunch: true
